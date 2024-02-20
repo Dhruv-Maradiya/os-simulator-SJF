@@ -4,19 +4,22 @@ import { Box, Collapse, Typography } from "@mui/material";
 import { useMemo } from "react";
 
 const GanttChart = ({ processes, processGanttChartOpen }) => {
+  // Calculate the finish time of the last process
   const finishTime = processes.reduce((acc, process) => {
     acc = Math.max(acc, process.finishTime);
 
     return acc;
   }, 0);
 
+  // Calculate the Gantt chart with ideal time
   const withIdealTime = useMemo(() => {
-    const cpuTimeTable = [];
+    const cpuTimeTable = []; // Stores the Gantt chart with ideal time
 
-    let previousProcess = null;
+    let previousProcess = null; // Stores the previous process
     processes.forEach((process, index) => {
       if (!previousProcess) {
         if (process.arrivalTime > 0) {
+          // If the first process doesn't start at 0, add an ideal process
           const idealProcess = {
             name: "Ideal",
             arrivalTime: 0,
@@ -29,6 +32,7 @@ const GanttChart = ({ processes, processGanttChartOpen }) => {
 
         cpuTimeTable.push(process);
       } else {
+        // If the current process doesn't start immediately after the previous process, add an ideal process
         if (process.arrivalTime > previousProcess.finishTime) {
           const idealProcess = {
             name: "Ideal",

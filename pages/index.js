@@ -42,22 +42,26 @@ const defaultProcesses = [
 ];
 
 export default function Home() {
-  const [processes, setProcesses] = useState(defaultProcesses);
-  const [open, setOpen] = useState(false);
-  const [editData, setEditData] = useState(null);
+  // State variables
+  const [processes, setProcesses] = useState(defaultProcesses); // Stores the list of processes
+  const [open, setOpen] = useState(false); // Controls the visibility of the "Add Process" dialog
+  const [editData, setEditData] = useState(null); // Stores the data of the process being edited
 
-  const [processOpen, setProcessOpen] = useState(true);
-  const [processTimeTableOpen, setProcessTimeTableOpen] = useState(true);
-  const [processGanttChartOpen, setProcessGanttChartOpen] = useState(true);
+  const [processOpen, setProcessOpen] = useState(true); // Controls the visibility of the process list
+  const [processTimeTableOpen, setProcessTimeTableOpen] = useState(true); // Controls the visibility of the process time table
+  const [processGanttChartOpen, setProcessGanttChartOpen] = useState(true); // Controls the visibility of the Gantt chart
 
+  // Calculate the processes with their execution time
   const processesWithTime = useMemo(() => {
+    // If no processes are available, return an empty array
     if (!processes.length) {
       return [];
     }
 
-    // debugger;
+    // Sort the processes based on their arrival time and burst time in ascending order group by arrival time
     const data = {};
 
+    // Group processes by their arrival time
     processes.forEach((process, index) => {
       if (data[process.arrivalTime]) {
         data[process.arrivalTime].push(process);
@@ -68,24 +72,28 @@ export default function Home() {
 
     const keys = Object.keys(data).sort((a, b) => a - b);
 
+    // Sort processes within each arrival time group based on burst time
     keys.forEach((key) => {
       data[key] = data[key].sort((a, b) => a.burstTime - b.burstTime);
     });
 
+    // Store the sorted processes in an array
     const processSorted = keys.map((key) => data[key]).flat();
 
-    const alreadyExecuted = [];
+    const alreadyExecuted = []; // Stores the names of the processes that have already been executed
+    let currentTime = processSorted[0].arrivalTime; // Stores the current time
+    const processesWithTime = []; // Stores the processes with finish time, waiting time, and turnaround time
 
-    let currentTime = processSorted[0].arrivalTime;
-
-    const processesWithTime = [];
-
+    // Execute the processes in shortest job first order
     for (let i = 0; i < processSorted.length; i++) {
+      // Find the shortest process that has arrived and not executed yet
       let shortestProcess = processSorted.reduce((acc, process) => {
         if (alreadyExecuted.includes(process.name)) {
+          // Checks if process is not already executed
           return acc;
         }
 
+        // Checks if the process has arrived
         if (process.arrivalTime <= currentTime) {
           if (!acc) {
             return process;
@@ -101,23 +109,27 @@ export default function Home() {
         return acc;
       }, null);
 
+      // If no process is available to execute, move to the next arrival time -- this is to handle the case when there are gaps between arrival times and the CPU is idle
       if (!shortestProcess && alreadyExecuted.length < processes.length) {
+        // Find the next arrival time
         const nextProcesses = processSorted.filter(
           (p) => p.arrivalTime > currentTime
         );
 
         if (nextProcesses.length) {
           shortestProcess = nextProcesses[0];
-
           currentTime = shortestProcess.arrivalTime;
         }
       }
 
+      // Execute the shortest process
       if (shortestProcess) {
+        // Calculate the finish time, waiting time, and turnaround time
         const finishTime = currentTime + shortestProcess.burstTime;
         const waitingTime = currentTime - shortestProcess.arrivalTime;
         const turnaroundTime = finishTime - shortestProcess.arrivalTime;
 
+        // Store the process with its execution time
         processesWithTime.push({
           ...shortestProcess,
           finishTime,
@@ -133,28 +145,29 @@ export default function Home() {
     return processesWithTime;
   }, [processes]);
 
+  // Add a new process to the list
   const handleAdd = (process) => {
     if (processes.some((p) => p.name === process.name)) {
       return toast.error("Process with the same name already exists");
     }
 
     const newProcesses = [...processes, process];
-
     setProcesses(newProcesses);
   };
 
+  // Edit an existing process in the list
   const handleEdit = (id, process) => {
     const newProcesses = processes.map((p, index) => {
       if (index === id) {
         return process;
       }
-
       return p;
     });
 
     setProcesses(newProcesses);
   };
 
+  // Close the "Add Process" dialog and reset the edit data
   const handleDialogClose = () => {
     setOpen(false);
     setEditData(null);
