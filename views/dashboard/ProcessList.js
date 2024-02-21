@@ -21,6 +21,7 @@ export default function ProcessList({
   setOpen,
   setEditData,
   processOpen,
+  setDeleteId,
 }) {
   return (
     <Collapse in={processOpen}>
@@ -57,11 +58,13 @@ export default function ProcessList({
                   <Tooltip title="Delete">
                     <IconButton
                       onClick={() => {
-                        const newProcesses = processes.filter(
-                          (p) => p.name !== process.name
-                        );
+                        // const newProcesses = processes.filter(
+                        //   (p) => p.name !== process.name
+                        // );
 
-                        setProcesses(newProcesses);
+                        // setProcesses(newProcesses);
+
+                        setDeleteId(process.name);
                       }}
                       sx={{
                         fontSize: "1rem",
