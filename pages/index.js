@@ -225,165 +225,186 @@ export default function Home() {
   }, []);
 
   return (
-    <Container
+    <Box
       sx={{
-        my: 5,
+        backgroundColor: (theme) => theme.palette.grey[100],
       }}
     >
-      <Card>
-        <CardContent
+      <Box
+        sx={{
+          width: "100%",
+          py: 2,
+        }}
+      >
+        <Typography variant="h4" sx={{ textAlign: "center" }}>
+          SJF (Shortest Job First) Simulator
+        </Typography>
+      </Box>
+      <Container>
+        <Box
           sx={{
-            textAlign: "center",
-            display: "flex",
-            justifyContent: "space-between",
+            p: 5,
           }}
         >
-          <Typography variant="h5">SJF (Shortest Job First)</Typography>
-          <Box
-            sx={{
-              display: "flex",
-              gap: 2,
-            }}
-          >
-            <Button variant="contained" onClick={() => setOpen(true)}>
-              Add Process
-            </Button>
-            <Button
-              variant="contained"
-              onClick={() => {
-                setOpenGroupMember(true);
+          <Card>
+            <CardContent
+              sx={{
+                textAlign: "center",
+                display: "flex",
+                justifyContent: "space-between",
               }}
             >
-              Group Members
-            </Button>
-            <Button
-              variant="contained"
-              color="success"
-              onClick={() => {
-                localStorage.setItem("processes", JSON.stringify(processes));
+              <Typography variant="h5">SJF (Shortest Job First)</Typography>
+              <Box
+                sx={{
+                  display: "flex",
+                  gap: 2,
+                }}
+              >
+                <Button variant="contained" onClick={() => setOpen(true)}>
+                  Add Process
+                </Button>
+                <Button
+                  variant="contained"
+                  onClick={() => {
+                    setOpenGroupMember(true);
+                  }}
+                >
+                  Group Members
+                </Button>
+                <Button
+                  variant="contained"
+                  color="success"
+                  onClick={() => {
+                    localStorage.setItem(
+                      "processes",
+                      JSON.stringify(processes)
+                    );
 
-                toast.success("Processes saved successfully");
-              }}
-            >
-              Save
-            </Button>
-          </Box>
-        </CardContent>
-        <CardContent
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            gap: 2,
-          }}
-        >
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-            }}
-          >
-            <Typography variant="h6">Processes</Typography>
-            <IconButton
-              onClick={() => {
-                setProcessOpen(!processOpen);
-              }}
+                    toast.success("Processes saved successfully");
+                  }}
+                >
+                  Save
+                </Button>
+              </Box>
+            </CardContent>
+            <CardContent
               sx={{
-                fontSize: "1.5rem",
+                display: "flex",
+                flexDirection: "column",
+                gap: 2,
               }}
             >
-              {processOpen ? <ArrowDropUpIcon /> : <ArrowDropDownIcon />}
-            </IconButton>
-          </Box>
-          <ProcessList
-            processes={processes}
-            setProcesses={setProcesses}
-            setOpen={setOpen}
-            setEditData={setEditData}
-            processOpen={processOpen}
-            setProcessOpen={setProcessOpen}
-            setDeleteId={setDeleteId}
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                }}
+              >
+                <Typography variant="h6">Processes</Typography>
+                <IconButton
+                  onClick={() => {
+                    setProcessOpen(!processOpen);
+                  }}
+                  sx={{
+                    fontSize: "1.5rem",
+                  }}
+                >
+                  {processOpen ? <ArrowDropUpIcon /> : <ArrowDropDownIcon />}
+                </IconButton>
+              </Box>
+              <ProcessList
+                processes={processes}
+                setProcesses={setProcesses}
+                setOpen={setOpen}
+                setEditData={setEditData}
+                processOpen={processOpen}
+                setProcessOpen={setProcessOpen}
+                setDeleteId={setDeleteId}
+              />
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                }}
+              >
+                <Typography variant="h6">Calculation Table</Typography>
+                <IconButton
+                  onClick={() => {
+                    setProcessTimeTableOpen(!processTimeTableOpen);
+                  }}
+                  sx={{
+                    fontSize: "1.5rem",
+                  }}
+                >
+                  {processTimeTableOpen ? (
+                    <ArrowDropUpIcon />
+                  ) : (
+                    <ArrowDropDownIcon />
+                  )}
+                </IconButton>
+              </Box>
+              <ProcessTimeTable
+                processes={processesWithTime}
+                processTimeTableOpen={processTimeTableOpen}
+                setProcessTimeTableOpen={setProcessTimeTableOpen}
+              />
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                }}
+              >
+                <Typography variant="h6">Gantt Chart</Typography>
+                <IconButton
+                  onClick={() => {
+                    setProcessGanttChartOpen(!processGanttChartOpen);
+                  }}
+                  sx={{
+                    fontSize: "1.5rem",
+                  }}
+                >
+                  {processGanttChartOpen ? (
+                    <ArrowDropUpIcon />
+                  ) : (
+                    <ArrowDropDownIcon />
+                  )}
+                </IconButton>
+              </Box>
+              <GanttChart
+                processes={processesWithTime}
+                processGanttChartOpen={processGanttChartOpen}
+              />
+            </CardContent>
+          </Card>
+          <AddProcess
+            open={open}
+            onClose={handleDialogClose}
+            handleAdd={handleAdd}
+            handleEdit={handleEdit}
+            editData={editData}
           />
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
+          <DeleteDialog
+            open={deleteId !== null}
+            setOpen={setDeleteId}
+            id={deleteId}
+            handleDelete={(id) => {
+              const newProcesses = processes.filter(
+                (process) => process.name !== id
+              );
+              setProcesses(newProcesses);
+              setDeleteId(null);
             }}
-          >
-            <Typography variant="h6">Calculation Table</Typography>
-            <IconButton
-              onClick={() => {
-                setProcessTimeTableOpen(!processTimeTableOpen);
-              }}
-              sx={{
-                fontSize: "1.5rem",
-              }}
-            >
-              {processTimeTableOpen ? (
-                <ArrowDropUpIcon />
-              ) : (
-                <ArrowDropDownIcon />
-              )}
-            </IconButton>
-          </Box>
-          <ProcessTimeTable
-            processes={processesWithTime}
-            processTimeTableOpen={processTimeTableOpen}
-            setProcessTimeTableOpen={setProcessTimeTableOpen}
           />
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
+          <GroupMember
+            groupMembers={groupMembers}
+            open={openGroupMember}
+            onClose={() => {
+              setOpenGroupMember(false);
             }}
-          >
-            <Typography variant="h6">Gantt Chart</Typography>
-            <IconButton
-              onClick={() => {
-                setProcessGanttChartOpen(!processGanttChartOpen);
-              }}
-              sx={{
-                fontSize: "1.5rem",
-              }}
-            >
-              {processGanttChartOpen ? (
-                <ArrowDropUpIcon />
-              ) : (
-                <ArrowDropDownIcon />
-              )}
-            </IconButton>
-          </Box>
-          <GanttChart
-            processes={processesWithTime}
-            processGanttChartOpen={processGanttChartOpen}
           />
-        </CardContent>
-      </Card>
-      <AddProcess
-        open={open}
-        onClose={handleDialogClose}
-        handleAdd={handleAdd}
-        handleEdit={handleEdit}
-        editData={editData}
-      />
-      <DeleteDialog
-        open={deleteId !== null}
-        setOpen={setDeleteId}
-        id={deleteId}
-        handleDelete={(id) => {
-          const newProcesses = processes.filter(
-            (process) => process.name !== id
-          );
-          setProcesses(newProcesses);
-          setDeleteId(null);
-        }}
-      />
-      <GroupMember
-        groupMembers={groupMembers}
-        open={openGroupMember}
-        onClose={() => {
-          setOpenGroupMember(false);
-        }}
-      />
-    </Container>
+        </Box>
+      </Container>
+    </Box>
   );
 }

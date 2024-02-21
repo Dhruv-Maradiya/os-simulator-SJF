@@ -27,7 +27,11 @@ export default function ProcessList({
     <Collapse in={processOpen}>
       <TableContainer component={Paper}>
         <Table>
-          <TableHead>
+          <TableHead
+            sx={{
+              backgroundColor: (theme) => theme.palette.grey[200],
+            }}
+          >
             <TableRow>
               <TableCell>Process Name</TableCell>
               <TableCell>Arrival Time</TableCell>

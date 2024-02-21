@@ -2,6 +2,7 @@ import Head from "next/head";
 import "../styles/globals.css";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import { Toaster } from "react-hot-toast";
+import { Box } from "@mui/material";
 
 export default function App({ Component, pageProps }) {
   const theme = createTheme();

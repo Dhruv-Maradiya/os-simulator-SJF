@@ -75,11 +75,17 @@ const GanttChart = ({ processes, processGanttChartOpen }) => {
                 <Box
                   sx={{
                     backgroundColor: (theme) =>
-                      theme.palette.mode === "light"
+                      process.ideal
+                        ? theme.palette.error.main
+                        : theme.palette.mode === "light"
                         ? theme.palette.grey[100]
                         : theme.palette.grey[900],
                     p: 2,
                     border: (theme) => `1px solid ${theme.palette.divider}`,
+                    color: (theme) =>
+                      process.ideal
+                        ? theme.palette.common.white
+                        : theme.palette.text.primary,
                   }}
                 >
                   {process.name}
