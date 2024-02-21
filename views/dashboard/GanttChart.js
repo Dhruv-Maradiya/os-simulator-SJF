@@ -64,6 +64,16 @@ const GanttChart = ({ processes, processGanttChartOpen }) => {
         {withIdealTime
           .sort((a, b) => a.finishTime - b.finishTime)
           .map((process, index) => {
+            const radiusObj = {};
+
+            if (index === 0) {
+              radiusObj.borderTopLeftRadius = 8;
+              radiusObj.borderBottomLeftRadius = 8;
+            } else if (index === withIdealTime.length - 1) {
+              radiusObj.borderTopRightRadius = 8;
+              radiusObj.borderBottomRightRadius = 8;
+            }
+
             return (
               <Box
                 key={process.name + index.toString()}
@@ -86,6 +96,7 @@ const GanttChart = ({ processes, processGanttChartOpen }) => {
                       process.ideal
                         ? theme.palette.common.white
                         : theme.palette.text.primary,
+                    ...radiusObj,
                   }}
                 >
                   {process.name}

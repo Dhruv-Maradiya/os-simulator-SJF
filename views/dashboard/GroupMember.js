@@ -18,23 +18,33 @@ const GroupMember = ({ groupMembers, open, onClose }) => {
         <Typography variant="h5" align="center">
           Group Members
         </Typography>
-        <TableContainer>
+        <TableContainer
+          sx={{
+            mt: 2,
+          }}
+        >
           <Table>
-            <TableHead>
+            <TableHead
+              sx={{
+                backgroundColor: (theme) => theme.palette.grey[200],
+              }}
+            >
               <TableRow>
                 <TableCell>Name</TableCell>
                 <TableCell>Enrollment No.</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {groupMembers.map((member, index) => {
-                return (
-                  <TableRow key={index}>
-                    <TableCell>{member.name}</TableCell>
-                    <TableCell>{member.eno}</TableCell>
-                  </TableRow>
-                );
-              })}
+              {groupMembers
+                .sort((a, b) => (a.name < b.name ? 1 : 0))
+                .map((member, index) => {
+                  return (
+                    <TableRow key={index}>
+                      <TableCell>{member.name}</TableCell>
+                      <TableCell>{member.eno}</TableCell>
+                    </TableRow>
+                  );
+                })}
             </TableBody>
           </Table>
         </TableContainer>

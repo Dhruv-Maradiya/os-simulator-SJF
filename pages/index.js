@@ -9,6 +9,7 @@ import {
   CardContent,
   Container,
   IconButton,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import { useEffect, useMemo, useState } from "react";
@@ -19,6 +20,7 @@ import GanttChart from "../views/dashboard/GanttChart";
 import GroupMember from "../views/dashboard/GroupMember";
 import ProcessList from "../views/dashboard/ProcessList";
 import ProcessTimeTable from "../views/dashboard/ProcessTimeTable";
+import GroupIcon from "@mui/icons-material/Group";
 
 const defaultProcesses = [
   {
@@ -228,6 +230,7 @@ export default function Home() {
     <Box
       sx={{
         backgroundColor: (theme) => theme.palette.grey[100],
+        minHeight: "100vh",
       }}
     >
       <Box
@@ -264,14 +267,7 @@ export default function Home() {
                 <Button variant="contained" onClick={() => setOpen(true)}>
                   Add Process
                 </Button>
-                <Button
-                  variant="contained"
-                  onClick={() => {
-                    setOpenGroupMember(true);
-                  }}
-                >
-                  Group Members
-                </Button>
+
                 <Button
                   variant="contained"
                   color="success"
@@ -286,6 +282,15 @@ export default function Home() {
                 >
                   Save
                 </Button>
+                <Tooltip title="Group Members">
+                  <IconButton
+                    onClick={() => {
+                      setOpenGroupMember(true);
+                    }}
+                  >
+                    <GroupIcon />
+                  </IconButton>
+                </Tooltip>
               </Box>
             </CardContent>
             <CardContent
