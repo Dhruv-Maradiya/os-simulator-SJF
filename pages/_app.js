@@ -1,7 +1,8 @@
-import Head from "next/head";
-import "../styles/globals.css";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
+import Head from "next/head";
 import { Toaster } from "react-hot-toast";
+import "../styles/globals.css";
+import Navbar from "../views/Navbar";
 import { Box } from "@mui/material";
 
 export default function App({ Component, pageProps }) {
@@ -16,7 +17,22 @@ export default function App({ Component, pageProps }) {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <ThemeProvider theme={theme}>
-        <Component {...pageProps} />
+        <Box
+          sx={{
+            minHeight: "100vh",
+            backgroundColor: (theme) => theme.palette.grey[100],
+          }}
+        >
+          <Navbar />
+          <Box
+            sx={{
+              p: 5,
+              pt: 10,
+            }}
+          >
+            <Component {...pageProps} />
+          </Box>
+        </Box>
       </ThemeProvider>
       <Toaster
         position="top-right"
