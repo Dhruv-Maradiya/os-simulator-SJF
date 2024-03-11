@@ -76,11 +76,6 @@ const DinningPhilosopherIntro = ({ introOpen }) => {
           necessary forks to eat, and that no philosopher is left waiting
           indefinitely.
         </Typography>
-        <Typography variant="body1"></Typography>
-        <Typography variant="body1"></Typography>
-        <Typography variant="body1"></Typography>
-        <Typography variant="body1"></Typography>
-        <Typography variant="body1"></Typography>
       </Box>
     </Collapse>
   );

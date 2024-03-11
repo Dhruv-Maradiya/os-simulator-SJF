@@ -10,10 +10,8 @@ import {
   ListItem,
   ListItemButton,
   ListItemText,
-  ThemeProvider,
   Toolbar,
   Typography,
-  createTheme,
 } from "@mui/material";
 import Link from "next/link";
 import { useState } from "react";
@@ -91,7 +89,7 @@ const Navbar = ({ window }) => {
           </Link>
           <Box sx={{ display: { xs: "none", sm: "block" } }}>
             {navItems.map((item) => (
-              <Link href={item.path}>
+              <Link key={item.title} href={item.path}>
                 <Button key={item.title} sx={{ color: "#fff" }}>
                   {item.title}
                 </Button>
