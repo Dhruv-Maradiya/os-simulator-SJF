@@ -17,6 +17,7 @@ import Semaphore from "../../classes/Semaphore";
 import DinningPhilosopherIntro from "./DinningPhilosopherIntro";
 import Philosophers from "./Philosophers";
 import { v4 as uuid } from "uuid";
+import Timestamps from "./Timestamps";
 
 const randomTime = (min = 3000, max = 10000) => {
   return Math.floor(Math.random() * (max - min + 1) + min);
@@ -84,17 +85,21 @@ const generatePhilosophers = (num) => {
         rightPhilosopher: ids[(i - 1 + num) % num],
         color: getRandomColor(num, i + 1),
         semaphore: new Semaphore(0),
-        think: () => {
+        think: (log) => {
+          log.setter(log, "thinkingStartAt", new Date().getTime());
           return new Promise((resolve) => {
             setTimeout(() => {
               resolve();
+              log.setter(log, "thinkingEndAt", new Date().getTime());
             }, randomTime());
           });
         },
-        eat: () => {
+        eat: (log) => {
+          log.setter(log, "eatingStartAt", new Date().getTime());
           return new Promise((resolve) => {
             setTimeout(() => {
               resolve();
+              log.setter(log, "eatingEndAt", new Date().getTime());
             }, randomTime());
           });
         },
@@ -108,25 +113,31 @@ let mutex = new Semaphore(1);
 
 export default function DinningPhilosopherView() {
   const [introOpen, setIntroOpen] = useState(false); // Controls the visibility of the introduction dialog
-  const [philosopherOpen, setPhilosophersOpen] = useState(true); // Controls the visibility of the introduction dialog
-  const [_philosophers, _setPhilosophers] = useState(generatePhilosophers(5)); // Number of philosophers [Default: 5]
+  const [logsOpen, setLogsOpen] = useState(true); // Controls the visibility of the logs section
+  const [philosophers, _setPhilosophers] = useState(generatePhilosophers(5)); // Number of philosophers [Default: 5]
   const [simulationOn, setSimulationOn] = useState(false);
+  const [logs, _setLogs] = useState([]); // Logs of the simulation
 
   const simulationOnRef = useRef(simulationOn);
-  const philosophersRef = useRef(_philosophers);
+  const philosophersRef = useRef(philosophers);
+  const logsRef = useRef(logs);
 
   const forks = useMemo(() => {
-    return _philosophers.map((p, index) => {
+    return philosophers.map((p, index) => {
       return {
         id: index,
         name: `Fork ${index + 1}`,
         leftPhilosopher: p.id,
-        rightPhilosopher: _philosophers[(index + 1) % _philosophers.length].id,
+        rightPhilosopher: philosophers[(index + 1) % philosophers.length].id,
       };
     });
-  }, [_philosophers]);
+  }, [philosophers]);
 
   const setPhilosophers = (value) => {
+    if (!simulationOnRef.current) {
+      return;
+    }
+
     value =
       typeof value === "function" ? value(philosophersRef.current) : value;
 
@@ -134,28 +145,56 @@ export default function DinningPhilosopherView() {
     _setPhilosophers(value);
   };
 
-  const test = (id, philosophers) => {
-    const philosopher = philosophers.find((p) => p.id === id);
+  const setLogs = (value) => {
+    if (!simulationOnRef.current) {
+      return;
+    }
 
-    const leftPhilosopher = philosophers.find(
+    value = typeof value === "function" ? value(logsRef.current) : value;
+
+    // Remove logs of philosophers that are not in the simulation anymore
+    value = value.filter((log) => {
+      return philosophersRef.current.find((p) => p.id === log.philosopher);
+    });
+
+    logsRef.current = value;
+    _setLogs(value);
+  };
+
+  const test = (id) => {
+    const philosopher = philosophersRef.current.find((p) => p.id === id);
+
+    if (!philosopher) {
+      return;
+    }
+
+    const leftPhilosopher = philosophersRef.current.find(
       (p) => p.id === philosopher.leftPhilosopher
     );
-    const rightPhilosopher = philosophers.find(
+    const rightPhilosopher = philosophersRef.current.find(
       (p) => p.id === philosopher.rightPhilosopher
     );
+
+    if (!leftPhilosopher || !rightPhilosopher) {
+      return;
+    }
 
     if (
       philosopher.status === "HUNGRY" &&
       leftPhilosopher.status !== "EATING" &&
       rightPhilosopher.status !== "EATING"
     ) {
-      console.log(`${philosopher.name} is ready to eat and changing status...`);
-
       // philosopher.status = "EATING";
       setPhilosophers((prev) => {
         const newPhilosophers = [...prev];
 
-        newPhilosophers.find((p) => p.id === id).status = "EATING";
+        const philosopher = newPhilosophers.find((p) => p.id === id);
+
+        if (!philosopher) {
+          return prev;
+        }
+
+        philosopher.status = "EATING";
 
         return newPhilosophers;
       });
@@ -164,28 +203,45 @@ export default function DinningPhilosopherView() {
     }
   };
 
-  const takeFork = async (id, philosophers) => {
-    const philosopher = philosophers.find((p) => p.id === id);
+  const takeFork = async (id, log) => {
+    const philosopher = philosophersRef.current.find((p) => p.id === id);
+
+    if (!philosopher) {
+      return;
+    }
 
     await mutex.wait();
 
     // philosopher.status = "HUNGRY";
     setPhilosophers((prev) => {
       const newPhilosophers = [...prev];
+      const philosopher = newPhilosophers.find((p) => p.id === id);
 
-      newPhilosophers.find((p) => p.id === id).status = "HUNGRY";
+      if (!philosopher) {
+        return prev;
+      }
+
+      philosopher.status = "HUNGRY";
+
+      log.setter(log, "hungryStartAt", new Date().getTime());
 
       return newPhilosophers;
     });
+    log.setter(log, "forksTryToAcquireAt", new Date().getTime());
 
-    test(id, philosophers);
+    test(id);
     mutex.signal();
 
     await philosopher.semaphore.wait();
+    log.setter(log, "forksAcquiredAt", new Date().getTime());
   };
 
-  const putFork = async (id, philosophers) => {
-    const philosopher = philosophers.find((p) => p.id === id);
+  const putFork = async (id) => {
+    const philosopher = philosophersRef.current.find((p) => p.id === id);
+
+    if (!philosopher) {
+      return;
+    }
 
     await mutex.wait();
 
@@ -193,37 +249,65 @@ export default function DinningPhilosopherView() {
     setPhilosophers((prev) => {
       const newPhilosophers = [...prev];
 
-      newPhilosophers.find((p) => p.id === id).status = "THINKING";
+      const philosopher = newPhilosophers.find((p) => p.id === id);
+
+      if (!philosopher) {
+        return prev;
+      }
+
+      philosopher.status = "THINKING";
 
       return newPhilosophers;
     });
 
-    test(philosopher.leftPhilosopher, philosophers);
-    test(philosopher.rightPhilosopher, philosophers);
+    test(philosopher.leftPhilosopher);
+    test(philosopher.rightPhilosopher);
     mutex.signal();
   };
 
   const philosopherAction = async ({ id, philosophers }) => {
     const philosopher = philosophers.find((p) => p.id === id);
 
-    while (true) {
-      console.log(`${philosopher.name} is thinking...`);
-      await philosopher.think();
-      console.log(`${philosopher.name} is hungry...`);
+    while (simulationOnRef.current) {
+      const log = {
+        id: uuid(),
+        philosopher: philosopher.id,
+        thinkingStartAt: null,
+        thinkingEndAt: null,
+        hungryStartAt: null,
+        forksTryToAcquireAt: null,
+        forksAcquiredAt: null,
+        eatingStartAt: null,
+        eatingEndAt: null,
+        setter: (obj, key, value) => {
+          setLogs((prev) => {
+            const newLogs = [...prev];
 
-      console.log(`${philosopher.name} is trying to take fork...`);
-      await takeFork(id, philosophers);
+            const log = newLogs.find((l) => l.id === obj.id);
 
-      console.log(`${philosopher.name} is eating...`);
-      await philosopher.eat();
+            if (log) {
+              log[key] = value;
+            }
 
-      console.log(`${philosopher.name} is putting fork...`);
-      await putFork(id, philosophers);
-      console.log(`${philosopher.name} is done...`);
+            return newLogs;
+          });
+        },
+      };
 
-      if (!simulationOnRef.current) {
-        break;
-      }
+      setLogs((prev) => {
+        const newLogs = [...prev];
+        newLogs.push(log);
+
+        return newLogs;
+      });
+
+      await philosopher.think(log);
+
+      await takeFork(id, log);
+
+      await philosopher.eat(log);
+
+      await putFork(id);
     }
   };
 
@@ -231,13 +315,14 @@ export default function DinningPhilosopherView() {
     mutex = new Semaphore(1);
     setSimulationOn(false);
     simulationOnRef.current = false;
-
-    // setPhilosophers(generatePhilosophers(_philosophers.length));
   };
 
   const handleStartSimulation = () => {
     setSimulationOn(true);
     simulationOnRef.current = true;
+
+    setPhilosophers(generatePhilosophers(philosophers.length));
+    setLogs([]);
 
     philosophersRef.current.forEach((philosopher) => {
       philosopherAction({
@@ -248,11 +333,39 @@ export default function DinningPhilosopherView() {
   };
 
   const handleAddPhilosopher = () => {
-    setPhilosophers(generatePhilosophers(philosophersRef.current.length + 1));
+    const value = generatePhilosophers(philosophers.length + 1);
+
+    philosophersRef.current.forEach((p, i) => {
+      philosophersRef.current[i].color = value[i].color;
+    });
+
+    const newPhilosopher = value[value.length - 1];
+
+    philosophersRef.current[0].leftPhilosopher = newPhilosopher.id;
+    philosophersRef.current[
+      philosophersRef.current.length - 1
+    ].rightPhilosopher = newPhilosopher.id;
+
+    newPhilosopher.leftPhilosopher =
+      philosophersRef.current[philosophersRef.current.length - 1].id;
+    newPhilosopher.rightPhilosopher = philosophersRef.current[0].id;
+
+    philosophersRef.current.push(newPhilosopher);
+
+    _setPhilosophers([...philosophersRef.current]);
   };
 
   const handleRemovePhilosopher = () => {
-    setPhilosophers(generatePhilosophers(philosophersRef.current.length - 1));
+    debugger;
+    philosophersRef.current.pop();
+
+    philosophersRef.current[
+      philosophersRef.current.length - 1
+    ].rightPhilosopher = philosophersRef.current[0].id;
+    philosophersRef.current[0].leftPhilosopher =
+      philosophersRef.current[philosophersRef.current.length - 1].id;
+
+    _setPhilosophers([...philosophersRef.current]);
   };
 
   const handlePlayPause = () => {
@@ -318,16 +431,6 @@ export default function DinningPhilosopherView() {
               }}
             >
               <Typography variant="h6">Philosophers</Typography>
-              <IconButton
-                onClick={() => {
-                  setPhilosophersOpen(!philosopherOpen);
-                }}
-                sx={{
-                  fontSize: "1.5rem",
-                }}
-              >
-                {philosopherOpen ? <ArrowDropUpIcon /> : <ArrowDropDownIcon />}
-              </IconButton>
             </Box>
             <Box
               sx={{
@@ -340,7 +443,7 @@ export default function DinningPhilosopherView() {
                 <Button
                   variant="contained"
                   onClick={handleAddPhilosopher}
-                  disabled={_philosophers.length >= 9 || simulationOn}
+                  disabled={philosophers.length >= 9 || simulationOn}
                 >
                   Add Philosopher
                 </Button>
@@ -350,7 +453,7 @@ export default function DinningPhilosopherView() {
                   variant="contained"
                   color="error"
                   onClick={handleRemovePhilosopher}
-                  disabled={_philosophers.length <= 3 || simulationOn}
+                  disabled={philosophers.length <= 3 || simulationOn}
                 >
                   Remove Philosopher
                 </Button>
@@ -382,10 +485,32 @@ export default function DinningPhilosopherView() {
             </Box>
           </Box>
           <Philosophers
-            philosopherOpen={philosopherOpen}
-            philosophers={_philosophers}
+            philosophers={philosophers}
             simulationOn={simulationOn}
             forks={forks}
+          />
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+            }}
+          >
+            <Typography variant="h6">Timestamps</Typography>
+            <IconButton
+              onClick={() => {
+                setLogsOpen(!logsOpen);
+              }}
+              sx={{
+                fontSize: "1.5rem",
+              }}
+            >
+              {logsOpen ? <ArrowDropUpIcon /> : <ArrowDropDownIcon />}
+            </IconButton>
+          </Box>
+          <Timestamps
+            LogsOpen={logsOpen}
+            logs={logs}
+            philosophers={philosophers}
           />
         </CardContent>
       </Card>

@@ -3,7 +3,7 @@
 import Fork from "@mui/icons-material/Flatware";
 import PersonIcon from "@mui/icons-material/Person3";
 import RiceBowlIcon from "@mui/icons-material/RiceBowl";
-import { Box, Collapse, Tooltip, useTheme } from "@mui/material";
+import { Box, Tooltip, useTheme } from "@mui/material";
 
 const radius = 25;
 
@@ -81,112 +81,103 @@ const PhilosopherView = ({ color, i, deg, status, simulationOn }) => {
   );
 };
 
-const Philosophers = ({
-  philosopherOpen,
-  philosophers,
-  simulationOn,
-  forks,
-}) => {
+const Philosophers = ({ philosophers, simulationOn, forks }) => {
   const deg = 360 / philosophers.length;
 
-  console.log({ forks });
-
   return (
-    <Collapse in={philosopherOpen}>
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        gap: 1,
+      }}
+    >
       <Box
         sx={{
           display: "flex",
-          flexDirection: "column",
-          gap: 1,
+          justifyContent: "center",
         }}
       >
         <Box
           sx={{
-            display: "flex",
-            justifyContent: "center",
+            padding: 10,
+            position: "relative",
+            transform: "rotate(-90deg)",
           }}
         >
+          {/* Dinning Table */}
           <Box
             sx={{
-              padding: 10,
+              width: (theme) => theme.spacing(radius * 2),
+              height: (theme) => theme.spacing(radius * 2),
+              borderRadius: "50%",
+              backgroundColor: (theme) => theme.palette.grey[300],
+              boxShadow: "0px 0px 10px rgba(0, 0, 0, 0.2)",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
               position: "relative",
-              transform: "rotate(-90deg)",
             }}
           >
-            {/* Dinning Table */}
-            <Box
-              sx={{
-                width: (theme) => theme.spacing(radius * 2),
-                height: (theme) => theme.spacing(radius * 2),
-                borderRadius: "50%",
-                backgroundColor: (theme) => theme.palette.grey[300],
-                boxShadow: "0px 0px 10px rgba(0, 0, 0, 0.2)",
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                position: "relative",
-              }}
-            >
-              <Tooltip title="Rice Bowl">
-                <RiceBowlIcon
-                  sx={{
-                    color: (theme) => theme.palette.grey[800],
-                    fontSize: "4rem",
-                    transform: "rotate(90deg)",
-                  }}
-                />
-              </Tooltip>
-              {/* Forks */}
-              <Box>
-                {forks.map((fork, i) => {
-                  const { top, left, angle } = calculatePosition(i, deg);
-
-                  const color = getForkColor(fork, philosophers);
-
-                  return (
-                    <Box
-                      key={i}
-                      sx={{
-                        position: "absolute",
-                        left: `${left}%`,
-                        top: `${top}%`,
-                        transform: "translate(-50%, -50%)",
-                      }}
-                    >
-                      <Tooltip title={fork.name}>
-                        <Fork
-                          sx={{
-                            color: color
-                              ? color
-                              : (theme) => theme.palette.grey[700],
-                            transform: `rotate(${angle}rad)`,
-                            fontSize: "3rem",
-                          }}
-                        />
-                      </Tooltip>
-                    </Box>
-                  );
-                })}
-              </Box>
-            </Box>
+            <Tooltip title="Rice Bowl">
+              <RiceBowlIcon
+                sx={{
+                  color: (theme) => theme.palette.grey[800],
+                  fontSize: "4rem",
+                  transform: "rotate(90deg)",
+                }}
+              />
+            </Tooltip>
+            {/* Forks */}
             <Box>
-              {philosophers.map(({ id, color, status }, i) => {
+              {forks.map((fork, i) => {
+                const { top, left, angle } = calculatePosition(i, deg);
+
+                const color = getForkColor(fork, philosophers);
+
                 return (
-                  <PhilosopherView
-                    key={id}
-                    color={color}
-                    i={i}
-                    deg={deg}
-                    status={status}
-                    simulationOn={simulationOn}
-                  />
+                  <Box
+                    key={i}
+                    sx={{
+                      position: "absolute",
+                      left: `${left}%`,
+                      top: `${top}%`,
+                      transform: "translate(-50%, -50%)",
+                    }}
+                  >
+                    <Tooltip title={fork.name}>
+                      <Fork
+                        sx={{
+                          color: color
+                            ? color
+                            : (theme) => theme.palette.grey[700],
+                          transform: `rotate(${angle}rad)`,
+                          fontSize: "3rem",
+                        }}
+                      />
+                    </Tooltip>
+                  </Box>
                 );
               })}
             </Box>
           </Box>
+          <Box>
+            {philosophers.map(({ id, color, status }, i) => {
+              return (
+                <PhilosopherView
+                  key={id}
+                  color={color}
+                  i={i}
+                  deg={deg}
+                  status={status}
+                  simulationOn={simulationOn}
+                />
+              );
+            })}
+          </Box>
         </Box>
       </Box>
-    </Collapse>
+    </Box>
   );
 };
 
