@@ -164,6 +164,7 @@ export default function DinningPhilosopherView() {
   const test = (id) => {
     const philosopher = philosophersRef.current.find((p) => p.id === id);
 
+    // For Stop Simulation
     if (!philosopher) {
       return;
     }
@@ -175,6 +176,7 @@ export default function DinningPhilosopherView() {
       (p) => p.id === philosopher.rightPhilosopher
     );
 
+    // For Stop Simulation
     if (!leftPhilosopher || !rightPhilosopher) {
       return;
     }
@@ -190,6 +192,7 @@ export default function DinningPhilosopherView() {
 
         const philosopher = newPhilosophers.find((p) => p.id === id);
 
+        // For Stop Simulation
         if (!philosopher) {
           return prev;
         }
@@ -206,6 +209,7 @@ export default function DinningPhilosopherView() {
   const takeFork = async (id, log) => {
     const philosopher = philosophersRef.current.find((p) => p.id === id);
 
+    // For Stop Simulation
     if (!philosopher) {
       return;
     }
@@ -217,6 +221,7 @@ export default function DinningPhilosopherView() {
       const newPhilosophers = [...prev];
       const philosopher = newPhilosophers.find((p) => p.id === id);
 
+      // For Stop Simulation
       if (!philosopher) {
         return prev;
       }
@@ -239,6 +244,7 @@ export default function DinningPhilosopherView() {
   const putFork = async (id) => {
     const philosopher = philosophersRef.current.find((p) => p.id === id);
 
+    // For Stop Simulation
     if (!philosopher) {
       return;
     }
@@ -251,6 +257,7 @@ export default function DinningPhilosopherView() {
 
       const philosopher = newPhilosophers.find((p) => p.id === id);
 
+      // For Stop Simulation
       if (!philosopher) {
         return prev;
       }
@@ -356,7 +363,6 @@ export default function DinningPhilosopherView() {
   };
 
   const handleRemovePhilosopher = () => {
-    debugger;
     philosophersRef.current.pop();
 
     philosophersRef.current[
