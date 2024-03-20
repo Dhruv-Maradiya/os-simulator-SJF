@@ -59,7 +59,6 @@ export default function SJFView() {
     const tempProcesses = processes.map((process) => {
       return {
         ...process,
-        executed: false,
       };
     });
 
