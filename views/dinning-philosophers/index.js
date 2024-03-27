@@ -13,7 +13,7 @@ import {
   Typography,
 } from "@mui/material";
 import { useMemo, useRef, useState } from "react";
-import Semaphore from "../../classes/Semaphore";
+import Semaphore from "../../@core/classes/Semaphore";
 import DinningPhilosopherIntro from "./DinningPhilosopherIntro";
 import Philosophers from "./Philosophers";
 import { v4 as uuid } from "uuid";

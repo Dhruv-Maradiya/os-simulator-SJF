@@ -27,6 +27,10 @@ const navItems = [
     path: "/dinning-philosophers",
   },
   {
+    title: "C Look",
+    path: "/c-look",
+  },
+  {
     title: "Group Members",
     path: "/members",
   },
