@@ -227,7 +227,7 @@ const CLookView = () => {
 
   return (
     <Container>
-      <Card sx={{ "&:focus": { backgroundColor: "transparent" } }}>
+      <Card>
         <CardContent
           sx={{
             display: "flex",
