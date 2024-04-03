@@ -27,9 +27,7 @@ const CLookView = () => {
   const [diskSize, setDiskSize] = useState("200");
   const [headPosition, setHeadPosition] = useState("50");
   const [direction, setDirection] = useState("right");
-  const [requestList, setRequestList] = useState([
-    176, 79, 34, 60, 92, 11, 41, 114,
-  ]);
+  const [requestList, setRequestList] = useState("176 79 34 60 92 11 41 114");
   const [isIntroductionOpen, setIsIntroductionOpen] = useState(false);
 
   const [totalSeekCount, setTotalSeekCount] = useState(0);
@@ -106,11 +104,11 @@ const CLookView = () => {
       series: [
         {
           name: "Requests",
-          data: sequence,
+          data: sequence.length ? [headPosition, ...sequence] : [],
         },
       ],
     };
-  }, [sequence, diskSize]);
+  }, [sequence, diskSize, headPosition]);
 
   const handleIntroductionToggle = () => {
     setIsIntroductionOpen(!isIntroductionOpen);
@@ -131,21 +129,20 @@ const CLookView = () => {
   const handleRequestListChange = (event) => {
     const input = event.target.value;
 
-    if (!input) {
-      setRequestList([]);
-      return;
-    }
-
-    const numbers = input.split(" ").map((number) => {
-      const parsed = parseInt(number, 10);
-      return isNaN(parsed) ? 0 : parsed;
-    });
-
-    setRequestList(numbers);
+    setRequestList(input);
   };
 
   const handleExecute = () => {
-    if (!diskSize || !headPosition || !requestList.length) {
+    const requestListArr = requestList
+      .split(" ")
+      .map((request) => parseInt(request, 10));
+
+    if (requestListArr.some((request) => isNaN(request))) {
+      toast.error("Request list must contain only numbers");
+      return;
+    }
+
+    if (!diskSize || !headPosition || !requestListArr.length) {
       toast.error("Please fill all the fields");
       return;
     }
@@ -158,7 +155,7 @@ const CLookView = () => {
       return;
     }
 
-    const requests = requestList.filter((request) => request <= disk);
+    const requests = requestListArr.filter((request) => request <= disk);
 
     if (requests.length === 0) {
       toast.error("No valid requests found");
@@ -332,7 +329,7 @@ const CLookView = () => {
                 Enter the order of requests (space-separated numbers)
               </FormLabel>
               <TextField
-                value={requestList.join(" ")}
+                value={requestList}
                 onChange={handleRequestListChange}
                 size="small"
                 fullWidth

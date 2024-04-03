@@ -30,9 +30,9 @@ const FIFOView = () => {
   const [isIntroductionOpen, setIsIntroductionOpen] = useState(false);
 
   const [frames, setFrames] = useState(5);
-  const [referenceString, setReferenceString] = useState([
-    2, 5, 7, 6, 1, 2, 5, 4, 3, 2, 1, 0, 4, 3, 2, 1,
-  ]);
+  const [referenceString, setReferenceString] = useState(
+    "2 5 7 6 1 2 5 4 3 2 1 0 4 3 2 1"
+  );
 
   const [tableData, setTableData] = useState([]); // Table data for the output
   const [hitRate, setHitRate] = useState(0); // Hit rate for the output
@@ -44,16 +44,7 @@ const FIFOView = () => {
   const handleReferenceChange = (event) => {
     const input = event.target.value;
 
-    if (!input) {
-      setReferenceString([]);
-      return;
-    }
-
-    const numbers = input.split(" ").map((number) => {
-      const parsed = parseInt(number, 10);
-      return isNaN(parsed) ? 0 : parsed;
-    });
-    setReferenceString(numbers);
+    setReferenceString(input);
   };
 
   const handleFramesChange = (e) => {
@@ -73,7 +64,16 @@ const FIFOView = () => {
       return;
     }
 
-    if (referenceString.length === 0) {
+    const referenceStringArr = referenceString
+      .split(" ")
+      .map((item) => parseInt(item));
+
+    if (referenceStringArr.some((item) => isNaN(item))) {
+      toast.error("Please enter valid reference string");
+      return;
+    }
+
+    if (referenceStringArr.length === 0) {
       toast.error("Please enter the reference string");
       return;
     }
@@ -84,8 +84,8 @@ const FIFOView = () => {
     let pageFaults = 0;
     let hit = 0;
 
-    for (let i = 0; i < referenceString.length; i++) {
-      const page = referenceString[i];
+    for (let i = 0; i < referenceStringArr.length; i++) {
+      const page = referenceStringArr[i];
 
       if (queue.includes(page)) {
         hit++;
@@ -111,7 +111,7 @@ const FIFOView = () => {
       }
     }
 
-    const hitRate = (hit / referenceString.length) * 100;
+    const hitRate = (hit / referenceStringArr.length) * 100;
     setHitRate(hitRate.toFixed(2));
     setTableData(tableData);
   };
@@ -178,7 +178,7 @@ const FIFOView = () => {
             <FormControl fullWidth>
               <FormLabel>Enter the references </FormLabel>
               <TextField
-                value={referenceString?.join(" ") || ""}
+                value={referenceString}
                 onChange={handleReferenceChange}
                 size="small"
                 fullWidth

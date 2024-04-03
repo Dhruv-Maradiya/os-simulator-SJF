@@ -55,7 +55,7 @@ const PhilosopherView = ({ color, i, deg, status, simulationOn }) => {
       }}
     >
       <Tooltip
-        title={status}
+        title={simulationOn ? status : `Philosopher ${i + 1}`}
         placement="top"
         open={simulationOn}
         componentsProps={{
