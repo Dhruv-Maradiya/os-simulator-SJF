@@ -96,6 +96,7 @@ const AddProcessDialog = ({
                   fullWidth
                   value={value}
                   onChange={onChange}
+                  disabled={editData}
                 />
                 {errors.name && (
                   <FormHelperText error>{errors.name.message}</FormHelperText>

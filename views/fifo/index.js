@@ -21,10 +21,11 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import CheckIcon from "@mui/icons-material/Check";
 import CloseIcon from "@mui/icons-material/Close";
+import axios from "../../utils/axios";
 
 const FIFOView = () => {
   const [isIntroductionOpen, setIsIntroductionOpen] = useState(false);
@@ -59,6 +60,12 @@ const FIFOView = () => {
   };
 
   const handleExecute = () => {
+    // save to db
+    axios.put("/fifo", {
+      frame: frames,
+      references: referenceString,
+    });
+
     if (!frames) {
       toast.error("Please enter the number of frames");
       return;
@@ -115,6 +122,22 @@ const FIFOView = () => {
     setHitRate(hitRate.toFixed(2));
     setTableData(tableData);
   };
+
+  useEffect(() => {
+    axios
+      .get("/fifo")
+      .then((response) => {
+        const { data } = response.data;
+
+        if (data) {
+          setFrames(data.frames || 0);
+          setReferenceString(data.references || "");
+        }
+      })
+      .catch((error) => {
+        toast.error("Error getting FIFO data");
+      });
+  }, []);
 
   return (
     <Container>

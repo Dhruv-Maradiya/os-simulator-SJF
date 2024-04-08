@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Box,
   Button,
@@ -22,6 +22,7 @@ import { Collapse } from "@mui/material";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDownRounded";
 import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUpRounded";
 import Chart from "../../@core/components/react-apexcharts";
+import axios from "../../utils/axios";
 
 const CLookView = () => {
   const [diskSize, setDiskSize] = useState("200");
@@ -147,6 +148,14 @@ const CLookView = () => {
       return;
     }
 
+    // handle save to db
+    axios.put("/c-look", {
+      diskSize,
+      headPosition,
+      requests: requestList,
+      direction,
+    });
+
     const disk = parseInt(diskSize, 10);
     let head = parseInt(headPosition, 10);
 
@@ -221,6 +230,24 @@ const CLookView = () => {
     setTotalSeekCount(totalSeekCount);
     setSequence(sequence);
   };
+
+  useEffect(() => {
+    axios
+      .get("/c-look")
+      .then((response) => {
+        const { data } = response.data;
+
+        if (data) {
+          setDiskSize(data.diskSize || 0);
+          setHeadPosition(data.headPosition || "");
+          setRequestList(data.requests || "");
+          setDirection(data.direction || "");
+        }
+      })
+      .catch((error) => {
+        toast.error("Error getting C-Look data");
+      });
+  }, []);
 
   return (
     <Container>

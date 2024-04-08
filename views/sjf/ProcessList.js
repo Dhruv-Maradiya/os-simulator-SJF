@@ -17,7 +17,6 @@ import {
 
 export default function ProcessList({
   processes,
-  setProcesses,
   setOpen,
   setEditData,
   processOpen,

@@ -17,33 +17,34 @@ import GanttChart from "./GanttChart";
 import ProcessList from "./ProcessList";
 import ProcessTimeTable from "./ProcessTimeTable";
 import SJFIntro from "./SJFIntro";
+import axios from "../../utils/axios";
 
-const defaultProcesses = [
-  {
-    name: "P1",
-    arrivalTime: 0,
-    burstTime: 5,
-  },
-  {
-    name: "P2",
-    arrivalTime: 1,
-    burstTime: 3,
-  },
-  {
-    name: "P3",
-    arrivalTime: 2,
-    burstTime: 1,
-  },
-  {
-    name: "P4",
-    arrivalTime: 3,
-    burstTime: 2,
-  },
-];
+// const defaultProcesses = [
+//   {
+//     name: "P1",
+//     arrivalTime: 0,
+//     burstTime: 5,
+//   },
+//   {
+//     name: "P2",
+//     arrivalTime: 1,
+//     burstTime: 3,
+//   },
+//   {
+//     name: "P3",
+//     arrivalTime: 2,
+//     burstTime: 1,
+//   },
+//   {
+//     name: "P4",
+//     arrivalTime: 3,
+//     burstTime: 2,
+//   },
+// ];
 
 export default function SJFView() {
   // State variables
-  const [processes, setProcesses] = useState(defaultProcesses); // Stores the list of processes
+  const [processes, setProcesses] = useState([]); // Stores the list of processes
   const [open, setOpen] = useState(false); // Controls the visibility of the "Add Process" dialog
   const [editData, setEditData] = useState(null); // Stores the data of the process being edited
 
@@ -166,6 +167,17 @@ export default function SJFView() {
     }
 
     const newProcesses = [...processes, process];
+
+    axios
+      .post("/processes", process)
+      .then((response) => {
+        toast.success("Process added successfully");
+      })
+      .catch((error) => {
+        console.error("Error adding process:", error);
+        toast.error("Error adding process");
+      });
+
     setProcesses(newProcesses);
   };
 
@@ -178,7 +190,32 @@ export default function SJFView() {
       return p;
     });
 
+    axios
+      .put(`/processes/${process.name}`, process)
+      .then((response) => {
+        toast.success("Process updated successfully");
+      })
+      .catch((error) => {
+        toast.error("Error updating process");
+      });
+
     setProcesses(newProcesses);
+  };
+
+  const handleDelete = (id) => {
+    const newProcesses = processes.filter((process) => process.name !== id);
+
+    axios
+      .delete(`/processes/${id}`)
+      .then((response) => {
+        toast.success("Process deleted successfully");
+      })
+      .catch((error) => {
+        toast.error("Error deleting process");
+      });
+
+    setProcesses(newProcesses);
+    setDeleteId(null);
   };
 
   // Close the "Add Process" dialog and reset the edit data
@@ -188,10 +225,16 @@ export default function SJFView() {
   };
 
   useEffect(() => {
-    const data = localStorage.getItem("processes");
-    if (data) {
-      setProcesses(JSON.parse(data));
-    }
+    axios
+      .get("/processes")
+      .then((response) => {
+        const processesData = response.data.data;
+        setProcesses(processesData);
+      })
+      .catch((error) => {
+        // handle the error
+        console.error("Error fetching processes:", error);
+      });
   }, []);
 
   return (
@@ -217,18 +260,6 @@ export default function SJFView() {
           >
             <Button variant="contained" onClick={() => setOpen(true)}>
               Add Process
-            </Button>
-
-            <Button
-              variant="contained"
-              color="success"
-              onClick={() => {
-                localStorage.setItem("processes", JSON.stringify(processes));
-
-                toast.success("Processes saved successfully");
-              }}
-            >
-              Save
             </Button>
           </Box>
         </CardContent>
@@ -351,13 +382,7 @@ export default function SJFView() {
         open={deleteId !== null}
         setOpen={setDeleteId}
         id={deleteId}
-        handleDelete={(id) => {
-          const newProcesses = processes.filter(
-            (process) => process.name !== id
-          );
-          setProcesses(newProcesses);
-          setDeleteId(null);
-        }}
+        handleDelete={handleDelete}
       />
     </Container>
   );
