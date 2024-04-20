@@ -35,7 +35,9 @@ const groupMembers = [
     name: "Meet Patel",
     eno: "22BCP240",
   },
-];
+].sort((a, b) => (a.name > b.name ? 1 : -1));
+
+console.log(groupMembers);
 
 const MembersView = () => {
   return (
@@ -55,16 +57,14 @@ const MembersView = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {groupMembers
-                .sort((a, b) => (a.name < b.name ? 1 : 0))
-                .map((member, index) => {
-                  return (
-                    <TableRow key={index}>
-                      <TableCell>{member.name}</TableCell>
-                      <TableCell>{member.eno}</TableCell>
-                    </TableRow>
-                  );
-                })}
+              {groupMembers.map((member, index) => {
+                return (
+                  <TableRow key={index}>
+                    <TableCell>{member.name}</TableCell>
+                    <TableCell>{member.eno}</TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </TableContainer>
