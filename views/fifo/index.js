@@ -202,7 +202,9 @@ const FIFOView = () => {
           {tableData.length > 0 && (
             <Box>
               <Typography variant="body1">Hit rate: {hitRate}%</Typography>
-
+              <Typography variant="body1">
+                Miss rate: {100 - hitRate}%
+              </Typography>
               <Box
                 sx={{
                   display: "flex",

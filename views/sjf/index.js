@@ -291,7 +291,7 @@ export default function SJFView() {
               alignItems: "center",
             }}
           >
-            <Typography variant="h6">Calculation Table</Typography>
+            <Typography variant="h6">Output Table</Typography>
             <IconButton
               onClick={() => {
                 setProcessTimeTableOpen(!processTimeTableOpen);
